@@ -1,11 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>FootyRetail</title>
+  <style>
+    @keyframes shoot1 {
+      0% { transform: translate(0,0) scale(0.5) rotate(0deg); opacity: 1; }
+      100% { transform: translate(400px,-300px) scale(1.2) rotate(360deg); opacity: 0; }
+    }
+    @keyframes shoot2 {
+      0% { transform: translate(0,0) scale(0.5) rotate(0deg); opacity: 1; }
+      100% { transform: translate(-400px,-250px) scale(1.3) rotate(-360deg); opacity: 0; }
+    }
+    @keyframes shoot3 {
+      0% { transform: translate(0,0) scale(0.6) rotate(0deg); opacity: 1; }
+      100% { transform: translate(300px,250px) scale(1.1) rotate(180deg); opacity: 0; }
+    }
+    @keyframes shoot4 {
+      0% { transform: translate(0,0) scale(0.6) rotate(0deg); opacity: 1; }
+      100% { transform: translate(-350px,200px) scale(1.2) rotate(-180deg); opacity: 0; }
+    }
 
-<h1>Football Shop</h1>
+    .ball {
+      position: absolute;
+      font-size: 3rem;
+      opacity: 0.9;
+    }
+    .ball1 { top: 70%; left: 10%; animation: shoot1 6s linear infinite; }
+    .ball2 { top: 80%; right: 10%; animation: shoot2 7s linear infinite 1s; }
+    .ball3 { bottom: 10%; left: 50%; animation: shoot3 8s linear infinite 2s; }
+    .ball4 { top: 20%; right: 30%; animation: shoot4 9s linear infinite 3s; }
 
-<h4>NPM: </h4>
-<p>{{ npm }}</p>
+    .hover-transform {
+      transition: all 0.3s ease;
+    }
+    .hover-transform:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 scroll-smooth">
+  <!-- Header -->
+  <header class="bg-black sticky top-0 z-50 shadow-md">
+    <nav class="text-white container mx-auto py-4 flex justify-between items-center px-4">
+      <a href="#" class="text-3xl font-extrabold tracking-wide">⚡ FootyRetail</a>
+      <div class="bg-green-700 px-4 py-2 rounded-full shadow text-lg font-semibold">
+        Welcome Philo Pradipta Adhi Satriya from class PBP F
+      </div>
+    </nav>
+  </header>
 
-<h4>Name: </h4>
-<p>{{ name }}</p>
+  <!-- Hero Section -->
+  <section class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-green-400 flex items-center justify-center relative overflow-hidden">
+    <!-- Shooting Football Emojis -->
+    <span class="ball ball1">⚽</span>
+    <span class="ball ball2">⚽</span>
+    <span class="ball ball3">⚽</span>
+    <span class="ball ball4">⚽</span>
 
-<h4>Class: </h4>
-<p>{{ class }}</p>
+    <!-- Main Text -->
+    <div class="text-center text-white px-4 relative z-10">
+      <h1 class="text-6xl lg:text-8xl font-extrabold drop-shadow-md">FootyRetail</h1>
+      <p class="text-xl lg:text-2xl mt-4 opacity-90">More Than Football</p>
+      <button onclick="scrollToGear()" 
+        class="mt-8 bg-yellow-400 text-black px-8 py-3 rounded-full text-lg font-semibold hover:bg-red-500 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg">
+        Shop Now
+      </button>
+    </div>
+  </section>
+
+  <!-- Gear Section -->
+  <section id="gear" class="bg-gray-100 py-16">
+    <div class="container mx-auto px-4">
+      <h2 class="text-5xl font-bold text-center text-gray-800 mb-12">Our Gear</h2>
+      <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <!-- Gear for Men -->
+        <div onclick="openProducts('men')" 
+          class="bg-yellow-400 rounded-xl p-12 text-center hover-transform hover:bg-red-500 group cursor-pointer">
+          <h3 class="text-3xl font-bold text-gray-800 group-hover:text-white">Gear for Men</h3>
+        </div>
+        <!-- Gear for Women -->
+        <div onclick="openProducts('women')" 
+          class="bg-yellow-400 rounded-xl p-12 text-center hover-transform hover:bg-red-500 group cursor-pointer">
+          <h3 class="text-3xl font-bold text-gray-800 group-hover:text-white">Gear for Women</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Section (hidden by default) -->
+  <section id="products" class="bg-white py-20 hidden">
+    <div class="container mx-auto px-4 text-center">
+      <h2 id="products-title" class="text-4xl font-bold text-gray-800 mb-6"></h2>
+      <p class="text-lg text-gray-600">Product belum tersedia</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black text-white py-8">
+    <div class="container mx-auto px-4 text-center">
+      <p class="text-lg">&copy; 2025 FootyRetail. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll to gear section
+    function scrollToGear() {
+      document.getElementById('gear').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Open products section
+    function openProducts(type) {
+      const products = document.getElementById('products');
+      const title = document.getElementById('products-title');
+      products.classList.remove('hidden');
+
+      if (type === 'men') {
+        title.textContent = 'Gear for Men';
+      } 
+      else {
+        title.textContent = 'Gear for Women';
+      }
+
+      // Scroll to products
+      products.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

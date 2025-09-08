@@ -61,3 +61,4 @@ class MainTest(TestCase):
         news_views=21
         )
         self.assertTrue(news_21.is_news_hot)
+
