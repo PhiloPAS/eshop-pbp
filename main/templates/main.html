@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <title>FootyRetail</title>
+  <title>{{ app_name }}</title>
   <style>
+    /* Animations */
     @keyframes shoot1 {
       0% { transform: translate(0,0) scale(0.5) rotate(0deg); opacity: 1; }
       100% { transform: translate(400px,-300px) scale(1.2) rotate(360deg); opacity: 0; }
@@ -23,19 +24,13 @@
       100% { transform: translate(-350px,200px) scale(1.2) rotate(-180deg); opacity: 0; }
     }
 
-    .ball {
-      position: absolute;
-      font-size: 3rem;
-      opacity: 0.9;
-    }
+    .ball { position: absolute; font-size: 3rem; opacity: 0.9; }
     .ball1 { top: 70%; left: 10%; animation: shoot1 6s linear infinite; }
     .ball2 { top: 80%; right: 10%; animation: shoot2 7s linear infinite 1s; }
     .ball3 { bottom: 10%; left: 50%; animation: shoot3 8s linear infinite 2s; }
     .ball4 { top: 20%; right: 30%; animation: shoot4 9s linear infinite 3s; }
 
-    .hover-transform {
-      transition: all 0.3s ease;
-    }
+    .hover-transform { transition: all 0.3s ease; }
     .hover-transform:hover {
       transform: scale(1.05);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -46,9 +41,9 @@
   <!-- Header -->
   <header class="bg-black sticky top-0 z-50 shadow-md">
     <nav class="text-white container mx-auto py-4 flex justify-between items-center px-4">
-      <a href="#" class="text-3xl font-extrabold tracking-wide">⚡ FootyRetail</a>
-      <div class="bg-green-700 px-4 py-2 rounded-full shadow text-lg font-semibold">
-        Welcome Philo Pradipta Adhi Satriya from class PBP F
+      <a href="#" class="text-3xl font-extrabold tracking-wide">{{ app_name }}</a>
+      <div class="bg-green-700 px-4 py-2 rounded-md shadow text-lg font-semibold">
+        Welcome {{ name }} from class {{ kelas }}
       </div>
     </nav>
   </header>
@@ -63,7 +58,7 @@
 
     <!-- Main Text -->
     <div class="text-center text-white px-4 relative z-10">
-      <h1 class="text-6xl lg:text-8xl font-extrabold drop-shadow-md">FootyRetail</h1>
+      <h1 class="text-6xl lg:text-8xl font-extrabold drop-shadow-md">{{ app_name }}</h1>
       <p class="text-xl lg:text-2xl mt-4 opacity-90">More Than Football</p>
       <button onclick="scrollToGear()" 
         class="mt-8 bg-yellow-400 text-black px-8 py-3 rounded-full text-lg font-semibold hover:bg-red-500 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg">
@@ -95,16 +90,9 @@
   <section id="products" class="bg-white py-20 hidden">
     <div class="container mx-auto px-4 text-center">
       <h2 id="products-title" class="text-4xl font-bold text-gray-800 mb-6"></h2>
-      <p class="text-lg text-gray-600">Product belum tersedia</p>
+      <p class="text-lg text-gray-600">Products coming soon!</p>
     </div>
   </section>
-
-  <!-- Footer -->
-  <footer class="bg-black text-white py-8">
-    <div class="container mx-auto px-4 text-center">
-      <p class="text-lg">&copy; 2025 FootyRetail. All rights reserved.</p>
-    </div>
-  </footer>
 
   <script>
     // Scroll to gear section
@@ -120,8 +108,7 @@
 
       if (type === 'men') {
         title.textContent = 'Gear for Men';
-      } 
-      else {
+      } else {
         title.textContent = 'Gear for Women';
       }
 
