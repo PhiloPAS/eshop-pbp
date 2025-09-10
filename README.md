@@ -49,58 +49,18 @@ tautan menuju pws https://philo-pradipta41-eshoppbp.pbp.cs.ui.ac.id
 > 7. Terakhir, jangan lupa push ke github dan deploy ke pws
 >git add .
 >git commit -m ""
->git push origin master
->git push pws master
+>git push origin main
+>git push pws main
 
 
 2. Buatlah bagan yang berisi request client ke web aplikasi berbasis Django beserta responnya dan jelaskan pada bagan tersebut kaitan antara urls.py, views.py, models.py, dan berkas html.
 
 >> Bagan
->+---------+     HTTP Request (URL)    +---------+
->| Client  | ------------------------> | Django  |
->+---------+                           +---------+
->                                        |
->                                         | (1) URL Routing
->                                     +---------+
->                                     | urls.py | -- (2) Panggil View yang sesuai
->                                     +---------+
->                                         |
->                                         | (3) Panggil fungsi di views.py
->                                         v
->                                     +----------+
->                                     | views.py | -- (4) Jika perlu, akses Model
->                                     +----------+
->                                         |
->                                         | (5) Query ke Database via Model
->                                         v
->                                     +----------+
->                                    | models.py| --> (6) ORM ke Database
->                                     +----------+
->                                         |
->                                         | (7) Kembalikan data ke View
->                                         v
->                                     +----------+
->                                     | views.py | -- (8) Render Template dengan data
->                                     +----------+
->                                         |
->                                         | (9) Kirim HTML yang di-render
->                                         v
->+---------+     HTTP Response (HTML)  +---------+
->| Client  | <------------------------ | Django  |
->+---------+                           +---------+
+> Bagan Versi Full ada di dalam file foto
+![alt text](<Bagan Full.png>)
 
-> bagan simplified MVT (sesuai tutorial 1)
->+-------------+    +-------------+    +-------------+
->|   urls.py   | -> |  views.py   | -> | template.html| -> Response ke Client
->| (URL Config)|    | (Controller)|    |   (View)     |
->+-------------+    +-------------+    +-------------+
->                         |
->                         | (Jika perlu data)
->                         v
->                   +-------------+    +-------------+
->                   |  models.py  | -> |  Database   |
->                   |   (Model)   |    |             |
->                   +-------------+    +-------------+
+> Bagan Versi Simplified MVT (sesuai tutorial 1) ada di dalam file foto
+![alt text](<Bagan MVT Simplified.png>)
 
 > urls.py (URL Routing) sebagai penghubung antara URL yang diminta client dengan views.py yang sesuai
 > views.py memproses request, berinteraksi dengan models.py, dan menyiapkan response
