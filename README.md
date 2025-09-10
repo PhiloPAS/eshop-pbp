@@ -16,93 +16,92 @@ tautan menuju pws https://philo-pradipta41-eshoppbp.pbp.cs.ui.ac.id
     > Dengan begitu, root URL langsung diarahkan ke aplikasi main. Lalu jalankan python manage.py runserver di terminal dan buka http://127.0.0.1:8000/ (cek hasil)
 
 > 4. Lalu saya modifikasi file models.py yang sebelumnya kosong, sekarang diisi oleh
-    name = models.CharField(max_length=100) (nama barang)
-    price = models.IntegerField() (harga barang)
-    description = models.TextField()  (deskripsi barang)
-    thumbnail = models.URLField() (gambar/foto barang)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES) (kategori, contohnya "Sepatu Bola" atau "Baju Bola")
-    is_featured = models.BooleanField(default=False) (status unggulan)
-    stock = models.IntegerField(default=0) (atribut tambahan berupa stock barang tersebut)
-    brand = models.CharField(max_length=50, blank=True, null=True) (atribut tambahan berupa merk barang tersebut)
+    >name = models.CharField(max_length=100) (nama barang)
+    >price = models.IntegerField() (harga barang)
+    >description = models.TextField()  (deskripsi barang)
+    >thumbnail = models.URLField() (gambar/foto barang)
+    >category = models.CharField(max_length=50, choices=CATEGORY_CHOICES) (kategori, contohnya "Sepatu Bola" atau "Baju Bola")
+    >is_featured = models.BooleanField(default=False) (status unggulan)
+    >stock = models.IntegerField(default=0) (atribut tambahan berupa stock barang tersebut)
+    >brand = models.CharField(max_length=50, blank=True, null=True) (atribut tambahan berupa merk barang tersebut)
 
 > 5. Lalu saya membuat fungsi pada views.py untuk mengembalikan ke template main.html
-from django.shortcuts import render
-def show_main(request):
-    context = {
-        'app_name' : 'FootyRetail',
-        'name': 'Philo Pradipta Adhi Satriya',
-        'kelas': 'PBP F'
-    }
+>from django.shortcuts import render
+>def show_main(request):
+    >context = {
+        >'app_name' : 'FootyRetail',
+        >'name': 'Philo Pradipta Adhi Satriya',
+        >'kelas': 'PBP F'
+    >}
 
-    return render(request, "main.html", context)
+    >return render(request, "main.html", context)
 
 > 6. Lalu kita membuat routing di urls.py aplikasi main untuk memetakan fungsi main.html pada views.py
-from django.urls import path
-from main.views import show_main
+>from django.urls import path
+>from main.views import show_main
 
-app_name = 'main'
+>app_name = 'main'
 
-urlpatterns = [
-    path('', show_main, name='show_main'),
-]
+>urlpatterns = [
+    >path('', show_main, name='show_main'),
+>]
 
 > 7. Terakhir, jangan lupa push ke github dan deploy ke pws
-git add .
-git commit -m ""
-git push origin master
-git push pws master
+>git add .
+>git commit -m ""
+>git push origin master
+>git push pws master
 
 
 2. Buatlah bagan yang berisi request client ke web aplikasi berbasis Django beserta responnya dan jelaskan pada bagan tersebut kaitan antara urls.py, views.py, models.py, dan berkas html.
 
 >> Bagan
-
-+---------+     HTTP Request (URL)    +---------+
-| Client  | ------------------------> | Django  |
-+---------+                           +---------+
-                                         |
-                                         | (1) URL Routing
-                                         v
-                                     +---------+
-                                     | urls.py | -- (2) Panggil View yang sesuai
-                                     +---------+
-                                         |
-                                         | (3) Panggil fungsi di views.py
-                                         v
-                                     +----------+
-                                     | views.py | -- (4) Jika perlu, akses Model
-                                     +----------+
-                                         |
-                                         | (5) Query ke Database via Model
-                                         v
-                                     +----------+
-                                     | models.py| --> (6) ORM ke Database
-                                     +----------+
-                                         |
-                                         | (7) Kembalikan data ke View
-                                         v
-                                     +----------+
-                                     | views.py | -- (8) Render Template dengan data
-                                     +----------+
-                                         |
-                                         | (9) Kirim HTML yang di-render
-                                         v
-+---------+     HTTP Response (HTML)  +---------+
-| Client  | <------------------------ | Django  |
-+---------+                           +---------+
+>+---------+     HTTP Request (URL)    +---------+
+>| Client  | ------------------------> | Django  |
+>+---------+                           +---------+
+>                                        |
+>                                         | (1) URL Routing
+>                                     +---------+
+>                                     | urls.py | -- (2) Panggil View yang sesuai
+>                                     +---------+
+>                                         |
+>                                         | (3) Panggil fungsi di views.py
+>                                         v
+>                                     +----------+
+>                                     | views.py | -- (4) Jika perlu, akses Model
+>                                     +----------+
+>                                         |
+>                                         | (5) Query ke Database via Model
+>                                         v
+>                                     +----------+
+>                                    | models.py| --> (6) ORM ke Database
+>                                     +----------+
+>                                         |
+>                                         | (7) Kembalikan data ke View
+>                                         v
+>                                     +----------+
+>                                     | views.py | -- (8) Render Template dengan data
+>                                     +----------+
+>                                         |
+>                                         | (9) Kirim HTML yang di-render
+>                                         v
+>+---------+     HTTP Response (HTML)  +---------+
+>| Client  | <------------------------ | Django  |
+>+---------+                           +---------+
 
 > bagan simplified MVT (sesuai tutorial 1)
-+-------------+    +-------------+    +-------------+
-|   urls.py   | -> |  views.py   | -> | template.html| -> Response ke Client
-| (URL Config)|    | (Controller)|    |   (View)     |
-+-------------+    +-------------+    +-------------+
-                         |
-                         | (Jika perlu data)
-                         v
-                   +-------------+    +-------------+
-                   |  models.py  | -> |  Database   |
-                   |   (Model)   |    |             |
-                   +-------------+    +-------------+
+>+-------------+    +-------------+    +-------------+
+>|   urls.py   | -> |  views.py   | -> | template.html| -> Response ke Client
+>| (URL Config)|    | (Controller)|    |   (View)     |
+>+-------------+    +-------------+    +-------------+
+>                         |
+>                         | (Jika perlu data)
+>                         v
+>                   +-------------+    +-------------+
+>                   |  models.py  | -> |  Database   |
+>                   |   (Model)   |    |             |
+>                   +-------------+    +-------------+
+
 > urls.py (URL Routing) sebagai penghubung antara URL yang diminta client dengan views.py yang sesuai
 > views.py memproses request, berinteraksi dengan models.py, dan menyiapkan response
 > models.py mendefinisikan struktur data dan berinteraksi dengan database
