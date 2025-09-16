@@ -1,5 +1,14 @@
 import uuid
 from django.db import models
+from django.utils import timezone
+
+
+
+# class Employee(models.Model):
+#   user_name = models.CharField(max_length=255)
+#   user_age = models.IntegerField()
+#   user_persona = models.TextField() # satu teks, satu varchar, perbedaannya: varchar digunakan utk teks yg udh pasti panjangnya (ada max line, terkhusus yg pendek). teksfield digunakan untuk teks yg panjang (desk produk, blog)
+
 
 class Product(models.Model):
     CATEGORY_CHOICES = [
@@ -8,16 +17,18 @@ class Product(models.Model):
         ('kids', 'Kids'),
         ('accessories', 'Accessories'),
     ]
-
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    price = models.IntegerField()
-    description = models.TextField()
-    thumbnail = models.URLField()
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    price = models.IntegerField(blank=True, null=True)
+    description = models.TextField(blank=True)
+    thumbnail = models.URLField(blank=True)   
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='men')
     is_featured = models.BooleanField(default=False)
     stock = models.IntegerField(default=0)
     brand = models.CharField(max_length=50, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    product_views = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.name} ({self.category})"
@@ -32,3 +43,12 @@ class Product(models.Model):
             self.save()
             return True
         return False
+
+    def increment_views(self):
+        self.product_views = (self.product_views or 0) + 1
+        self.save()
+
+    
+
+
+# model baru, employee (name (maks 255),nama,age,persona (teks panjang tdk ada batas karakter)
