@@ -4,7 +4,7 @@ PBP F
 
 tautan menuju pws https://philo-pradipta41-eshoppbp.pbp.cs.ui.ac.id
 
-Tugas 2:
+# Tugas 2:
 
 1. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
 >> Awalnya saya mengikuti tutorial 0 dan 1, lalu saya mempelajari juga via online untuk desain tambahan menggunakan tailwind (youtube web programming unpas)
@@ -111,7 +111,8 @@ git push pws main
 >> Feedback apresisasi karena tutorial dibuat dengan jelas dan terperinci, sehingga saya dapat dengan mudah mengikuti step-by-step.
 
 
-Tugas 3:
+
+# Tugas 3:
 1. Jelaskan mengapa kita memerlukan data delivery dalam pengimplementasian sebuah platform?
 > agar kita dapat mengirimkan data produk/stock secara ke client (web/mobile/third-party), memungkinkan decoupling backend–frontend, mendukung multi-klien, konsistensi data, caching/performance, dan kontrol akses/security.
 
@@ -145,3 +146,22 @@ _____________
 ![alt text](<Screenshot 2025-09-17 at 01.57.19.png>)
 ![alt text](<Screenshot 2025-09-17 at 01.55.57.png>)
 ![alt text](<Screenshot 2025-09-17 at 01.55.37.png>)
+
+
+
+
+# Tugas 4
+1. Apa itu Django AuthenticationForm? Jelaskan juga kelebihan dan kekurangannya.
+> AuthenticationForm adalah form bawaan Django yang (kali ini) kita gunakan di login_user sebagai tempat setor kredensial, memvalidasi melalui authenticate() dan memberi akses ke form.get_user() untuk dipakai oleh login(). Kelebihannya: cepat dipasang, aman secara default untuk validasi password, dan langsung kompatibel dengan login() sehingga session berfungsi tanpa banyak boilerplate. Kekurangannya muncul jika kita ingin login dengan email atau menambahkan 2FA/lockout, kita perlu subclass atau integrasi tambahan karena AuthenticationForm hanya menangani username/password dan tidak memberi proteksi brute-force atau OTP otomatis.
+
+2. Apa perbedaan antara autentikasi dan otorisasi? Bagaiamana Django mengimplementasikan kedua konsep tersebut?
+> Autentikasi memastikan identitas (siapa pengguna) sedangkan otorisasi menentukan apa yang boleh dilakukan dan untuk di tugas kali ini, autentikasi dihandle oleh AuthenticationForm + login() dan AuthenticationMiddleware sehingga request.user tersedia, dan otorisasi sederhana diimplementasikan lewat decorator @login_required dan filter di show_main (Product.objects.filter(user=request.user) untuk “My Products”), serta pengecekan ownership yang kita gunakan di view/detail rendering — untuk granular permission (edit/delete hanya atmin).
+
+3. Apa saja kelebihan dan kekurangan session dan cookies dalam konteks menyimpan state di aplikasi web?
+> Session (server-side) dan cookies (client-side) masing-masing muncul di program. Kita menggunakan session-based auth (Django login() menyimpan session id) dan juga menulis cookie last_login sendiri, kelebihan session adalah data sensitif tidak tersimpan di client dan mudah di-invalidasi di server, sedangkan cookie mudah dipakai untuk data ringan dan persistensi di client. Kekurangannya session perlu storage/skalabilitas (shared store seperti Redis jika banyak user), menyimpan last_login sebagai cookie adalah nyaman tapi bukan sumber kebenaran terbaik (lebih baik gunakan request.user.last_login).
+
+4. Apakah penggunaan cookies aman secara default dalam pengembangan web, atau apakah ada risiko potensial yang harus diwaspadai? Bagaimana Django menangani hal tersebut?
+> Cookies tidak selalu aman karena bisa dicuri lewat XSS atau jaringan tanpa HTTPS, jadi jangan (tidak disarankan) untuk menyimpan data rahasia langsung di cookies. Django membantu dengan cara menyimpan data session di server (browser hanya pegang ID), memberi tanda tangan digital (signed) pada cookie supaya tidak bisa dipalsukan, dan mengaktifkan HttpOnly agar cookie tidak bisa diakses JavaScript.
+
+5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
+> Saya mengimplementasikan checklist dengan menambahkan field `user` pada model `Product` menggunakan `ForeignKey` agar setiap produk terkait dengan user, lalu menjalankan `makemigrations` dan `migrate` supaya database diperbarui tanpa merusak data lama. Di `views.py`, saya ubah `create_product` agar menggunakan `commit=False` sehingga bisa menetapkan `product.user = request.user` sebelum disimpan, serta menambahkan `request.FILES` agar upload file berfungsi. Fungsi `show_main` saya perbaiki untuk membaca query parameter `filter` sehingga bisa menampilkan semua produk atau hanya milik user yang sedang login, dan `show_product` saya ubah menjadi `select_related('user')` untuk mengurangi query sekaligus menambahkan `try/except` agar error saat increment views tidak memutus rendering. Di template, saya perbaiki `product_detail.html` untuk menampilkan author dengan aman dan menambahkan tombol filter All/My Product di `main.html` agar user bisa memilih produk yang ditampilkan. Selain itu, saya menambahkan cookie `last_login` saat login dan menghapusnya saat logout supaya informasi login terakhir bisa ditampilkan.

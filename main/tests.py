@@ -45,12 +45,14 @@ class MainTest(TestCase):
         news.increment_views()
         self.assertEqual(news.news_views, initial_views + 1)
         
+
+        # modify disini
     def test_is_news_hot_threshold(self):
         # Test news with exactly 20 views (should not be hot)
         news_20 = News.objects.create(
-        title="News with 20 views",
+        title="News with 5 views",
         content="Test content",
-        news_views=20
+        news_views=4
         )
         self.assertFalse(news_20.is_news_hot)
         
@@ -58,7 +60,7 @@ class MainTest(TestCase):
         news_21 = News.objects.create(
         title="News with 21 views", 
         content="Test content",
-        news_views=21
+        news_views=5
         )
         self.assertTrue(news_21.is_news_hot)
 

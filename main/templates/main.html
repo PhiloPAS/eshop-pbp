@@ -18,29 +18,104 @@
   .product-card { border-radius: 12px; padding: 1rem; background: white; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
   .product-thumb { width:100%; height:180px; object-fit:cover; border-radius:8px; }
 
+  .user-box--welcome {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border-radius: 0.375rem;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    font-weight: 600;
+    min-width: 320px;
+    text-align: center;
+    background-color: #047857;
+    color: #fff;
+  }
+  .user-box--welcome:hover { filter: brightness(0.95); transform: translateY(-1px); }
+
+  .btn-logout {
+    background-color: #dc2626;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    min-width: 96px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.10);
+    transition: background-color .15s ease, transform .12s ease;
+  }
+  .btn-logout:hover { background-color: #b91c1c; transform: translateY(-1px); color: #fff; }
+
+  .btn-hero {
+    padding: 12px 32px;
+    border-radius: 9999px;
+    font-weight: 700;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    min-width: 220px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .btn-hero--primary { background-color: #facc15; color: #071014; }
+  .btn-hero--primary:hover { background-color: #ef4444; color: white; transform: scale(1.04); }
+
+  .btn-hero--secondary { background-color: #10b981; color: white; }
+  .btn-hero--secondary:hover { background-color: #059669; transform: scale(1.03); }
+
   .btn-create {
-    background-color: red;
+    background-color: #ef4444;
     color: white;
     padding: 12px 32px;
     border-radius: 9999px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    display: inline-block;
+    font-weight: 700;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    min-width: 220px;
+    text-align: center;
+    cursor: pointer;
   }
   .btn-create:hover {
-    background-color: yellow;
-    color: black;
+    background-color: #facc15;
+    color: #071014;
     transform: scale(1.05);
+  }
+
+  .hero-actions { display:flex; flex-direction:column; align-items:center; gap:0.75rem; margin-top:2rem; }
+  .hero-row { display:flex; gap:1rem; justify-content:center; width:100%; max-width:820px; }
+  @media (max-width:640px) {
+    .btn-hero, .btn-create { min-width: 160px; padding: 10px 20px; }
+    .hero-row { flex-direction: column; gap:0.6rem; align-items:center; }
+    .user-box--welcome { display:none; }
+    .btn-logout { min-width: 72px; padding: 6px 10px; }
   }
 </style>
 
 <header class="bg-black sticky top-0 z-50 shadow-md">
   <nav class="text-white container mx-auto py-4 flex justify-between items-center px-4">
-    <a href="{% url 'main:show_main' %}" class="text-3xl font-extrabold tracking-wide">{{ app_name }}</a>
-    <div class="flex items-center gap-4">
-      <div class="bg-green-700 px-4 py-2 rounded-md shadow text-lg font-semibold hidden sm:block ml-6">
+    <div class="flex flex-col">
+      <a href="{% url 'main:show_main' %}" class="text-3xl font-extrabold tracking-wide">{{ app_name }}</a>
+      <small class="text-white text-sm opacity-90 mt-1">Sesi terakhir login: {{ last_login }}</small>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="user-box--welcome hidden sm:inline-flex ml-6">
         Welcome {{ name }} from class {{ kelas }}
       </div>
+
+      {% if user.is_authenticated %}
+        <a href="{% url 'main:logout' %}" class="btn-logout" title="Logout">Logout</a>
+      {% else %}
+        <a href="{% url 'main:login' %}" class="btn-logout" title="Login">Login</a>
+      {% endif %}
     </div>
   </nav>
 </header>
@@ -54,11 +129,26 @@
   <div class="text-center text-white px-4 relative z-10">
     <h1 class="text-6xl lg:text-8xl font-extrabold drop-shadow-md">{{ app_name }}</h1>
     <p class="text-xl lg:text-2xl mt-4 opacity-90">More Than Football</p>
-    <div class="mt-8 flex gap-4 justify-center">
-      <button onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})" class="bg-yellow-400 text-black px-8 py-3 rounded-full text-lg font-semibold hover:bg-red-500 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg">
-        Shop Now
-      </button>
-      <a href="{% url 'main:create_product' %}" class="btn-create">Create Product</a>
+
+    <div class="hero-actions">
+      <div class="hero-row">
+        <button onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})"
+                class="btn-hero btn-hero--primary">
+          Shop Now
+        </button>
+
+        <a href="{% url 'main:create_product' %}" class="btn-create">Create Product</a>
+      </div>
+
+      <div class="hero-row">
+        <a href="?filter=all" class="btn-hero btn-hero--secondary">All Products</a>
+
+        {% if user.is_authenticated %}
+          <a href="?filter=my" class="btn-hero btn-hero--secondary">My Products</a>
+        {% else %}
+          <span class="btn-hero" style="background:#94a3b8; color:#0f172a; opacity:0.9; cursor:not-allowed;">My Products</span>
+        {% endif %}
+      </div>
     </div>
   </div>
 </section>
@@ -79,11 +169,11 @@
           <a href="{% url 'main:product_detail' product.id %}" class="hover:underline">{{ product.name }}</a>
         </h3>
         <p class="text-sm text-gray-600 mb-2">{{ product.get_category_display }}{% if product.is_featured %} · Featured{% endif %}</p>
-        
+
         <p class="text-gray-700 mb-2">
           {{ product.description|slice:":20" }}{% if product.description|length > 20 %}....{% endif %}
         </p>
-        
+
         <p class="text-xs text-gray-500 text-left mb-4">Stock: {{ product.stock }}</p>
 
         <div class="flex justify-between items-center">
