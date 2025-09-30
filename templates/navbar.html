@@ -1,0 +1,125 @@
+<!-- navbar.html (mobile only, glassmorphism) -->
+<nav class="block md:hidden fixed top-0 left-0 w-full z-50">
+  <style>
+    /* hide main header only on small screens to avoid duplication */
+    @media (max-width: 767px) {
+      header:first-of-type { display: none !important; }
+      /* reserve space for fixed navbar (adjust if you change navbar height) */
+      body { padding-top: 4.25rem !important; } /* 4.25rem ~= 68px */
+    }
+    @media (min-width: 768px) {
+      /* ensure this mobile nav never shows on desktop */
+      nav.block.md\\:hidden { display: none !important; }
+    }
+    /* small helper to ensure backdrop works across browsers */
+    .frosted {
+      background: rgba(8, 11, 15, 0.55); /* semi-transparent dark */
+      border: 1px solid rgba(255,255,255,0.06);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+      backdrop-saturate: 120%;
+    }
+  </style>
+
+  <div class="frosted">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand -->
+        <div class="flex items-center">
+          <a href="{% url 'main:show_main' %}" class="inline-flex items-center gap-2">
+            <span class="inline-block rounded-md p-1" style="background: linear-gradient(135deg,#10b981,#84cc16);">
+              <!-- small logo circle -->
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
+            </span>
+            <span class="text-white text-lg font-extrabold tracking-tight hover:text-green-300 transition-colors">FootyRetail</span>
+          </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden flex items-center">
+          <button class="mobile-menu-button p-2 text-white hover:text-green-300 transition-colors" aria-expanded="false" aria-controls="mobile-menu">
+            <span class="sr-only">Open menu</span>
+            <div class="w-6 h-6 flex flex-col justify-center items-center">
+              <span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm"></span>
+              <span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5"></span>
+              <span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm"></span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu hidden md:hidden border-t border-white/6">
+      <div class="px-4 py-4 space-y-4">
+        <!-- nav links styled more modern/futuristic -->
+        <div class="space-y-1">
+          <a href="{% url 'main:show_main' %}" class="block text-white/95 hover:text-green-300 font-medium py-3 px-2 rounded-md transition-colors">
+            Home
+          </a>
+          <a href="{% url 'main:create_product' %}" class="block text-white/95 hover:text-green-300 font-medium py-3 px-2 rounded-md transition-colors">
+            Create Product
+          </a>
+          <a href="?filter=all" class="block text-white/95 hover:text-green-300 font-medium py-3 px-2 rounded-md transition-colors">
+            All Products
+          </a>
+          {% if user.is_authenticated %}
+            <a href="?filter=my" class="block text-white/95 hover:text-green-300 font-medium py-3 px-2 rounded-md transition-colors">
+              My Products
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- user/auth area with modern buttons -->
+        <div class="pt-2 border-t border-white/6">
+          {% if user.is_authenticated %}
+            <div class="mb-3 px-2">
+              <div class="text-white font-semibold">{{ name|default:user.username }}</div>
+              <div class="text-xs text-white/60">{{ kelas|default:"Student" }}</div>
+            </div>
+            <a href="{% url 'main:logout' %}" class="block bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg text-center transition-colors shadow-sm">
+              Logout
+            </a>
+          {% else %}
+            <div class="space-y-3 px-2">
+              <a href="{% url 'main:login' %}" class="block bg-white/6 hover:bg-white/10 text-white font-semibold py-3 px-4 rounded-lg text-center transition-colors shadow-sm">
+                Login
+              </a>
+              <a href="{% url 'main:register' %}" class="block bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-lg text-center transition-colors shadow-md">
+                Register
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  (function () {
+    const btn = document.querySelector("button.mobile-menu-button");
+    const menu = document.getElementById("mobile-menu");
+    if (!btn || !menu) return;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isHidden = menu.classList.toggle("hidden");
+      btn.setAttribute("aria-expanded", String(!isHidden));
+    });
+    // close menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target) && !btn.contains(e.target) && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+        btn.setAttribute("aria-expanded", "false");
+      }
+    });
+    // optional: close menu on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+        btn.setAttribute("aria-expanded", "false");
+      }
+    });
+  })();
+</script>

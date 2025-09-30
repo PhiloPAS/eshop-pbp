@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+  .rolling-container { position: fixed; left: 0; right: 0; bottom: 0; height: 140px; pointer-events: none; z-index: 10; overflow: visible; }
+  @keyframes roll { from { transform: translate3d(-15vw, 0, 0) rotate(0deg); opacity: 0.98; } to { transform: translate3d(115vw, 0, 0) rotate(720deg); opacity: 0.98; } }
+  .rolling-ball { position:absolute; left:0; --bottom:20px; --size:3.0rem; --duration:15s; --delay:0s; bottom:var(--bottom); font-size:var(--size); transform-origin:center center; backface-visibility:hidden; will-change:transform,opacity; animation: roll var(--duration) linear infinite; animation-delay:var(--delay); pointer-events:none; filter:drop-shadow(0 6px 12px rgba(0,0,0,0.25)); transform:translate3d(0,0,0); opacity:0.98; user-select:none; }
+  .rolling-ball.ball-1 { --bottom:18px; --size:3.0rem; --duration:14s; --delay:-4s; }
+  .rolling-ball.ball-2 { --bottom:40px; --size:2.4rem; --duration:18s; --delay:-9s; }
+  .rolling-ball.ball-3 { --bottom:28px; --size:3.6rem; --duration:20s; --delay:-13s; }
+  @media (prefers-reduced-motion: reduce) { .rolling-ball { animation:none !important; transform:translate3d(-15vw,0,0) rotate(0deg); } }
+
+  .form-card { background:white; border-radius:1rem; box-shadow:0 12px 40px rgba(2,6,23,0.06); border:1px solid rgba(15,23,42,0.04); overflow:hidden; }
+  .form-header { padding:1.5rem 1.75rem; background:linear-gradient(90deg, rgba(236,253,245,1) 0%, rgba(255,255,255,1) 100%); }
+  .form-body { padding:1.25rem 1.75rem 2rem; }
+  form input, form textarea, form select { width:100%; padding:0.625rem 0.75rem; border-radius:0.5rem; border:1px solid rgba(15,23,42,0.08); margin-bottom:0.75rem; font-size:0.95rem; }
+  form input:focus, form textarea:focus, form select:focus { box-shadow: 0 6px 18px rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.6); transform: translateY(-1px); }
+  .actions { display:flex; gap:0.75rem; align-items:center; justify-content:flex-end; margin-top:0.75rem; }
+  .btn-primary { background: linear-gradient(90deg,#10b981,#84cc16); color:white; padding:0.65rem 1.25rem; border-radius:999px; font-weight:700; box-shadow:0 10px 30px rgba(16,185,129,0.12); border:none; cursor:pointer; transition: transform .12s ease, box-shadow .12s ease; }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(16,185,129,0.16); }
+  .btn-ghost { background:transparent; color:#0f172a; padding:0.55rem 1rem; border-radius:0.5rem; border:1px solid rgba(15,23,42,0.06); cursor:pointer; }
+  table.form-table { width:100%; border-collapse: collapse; }
+  table.form-table td { vertical-align: top; padding: 6px 8px; }
+  table.form-table td.label-col { width: 28%; padding-top: 10px; color: #334155; font-weight:600; }
+  @media (max-width:640px) { table.form-table td.label-col { display:block; width:100%; padding-bottom:0.25rem; } table.form-table td.input-col { display:block; width:100%; } .actions { justify-content:center; } }
+</style>
+
+<!-- Rolling Balls -->
+<div class="rolling-container" aria-hidden="true">
+  <div class="rolling-ball ball-1">⚽</div>
+  <div class="rolling-ball ball-2">⚽</div>
+  <div class="rolling-ball ball-3">⚽</div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-3xl mx-auto form-card">
+    <div class="form-header">
+      <h1 class="text-3xl font-extrabold text-gray-900">Edit Product</h1>
+      <p class="text-sm text-gray-600 mt-1">Perbarui detail produk Anda.</p>
+    </div>
+
+    <div class="form-body">
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <table class="form-table">
+          {% for field in form %}
+            <tr>
+              <td class="label-col"><label for="{{ field.id_for_label }}">{{ field.label }}</label></td>
+              <td class="input-col">
+                {{ field }}
+                {% if field.help_text %}<p class="text-xs text-gray-500">{{ field.help_text }}</p>{% endif %}
+                {% if field.errors %}<p class="text-sm text-red-600">{{ field.errors }}</p>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          <tr>
+            <td></td>
+            <td>
+              <div class="actions">
+                {# Prefer product from context, otherwise use form.instance as fallback #}
+                {% if product %}
+                  <a href="{% url 'main:product_detail' product.id %}" class="btn-ghost">Cancel</a>
+                {% else %}
+                  <a href="{% url 'main:product_detail' form.instance.id %}" class="btn-ghost">Cancel</a>
+                {% endif %}
+                <input type="submit" value="Save Changes" class="btn-primary" />
+              </div>
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

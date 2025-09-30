@@ -11,6 +11,14 @@ from django.contrib.auth.models import User
 #   user_persona = models.TextField() # satu teks, satu varchar, perbedaannya: varchar digunakan utk teks yg udh pasti panjangnya (ada max line, terkhusus yg pendek). teksfield digunakan untuk teks yg panjang (desk produk, blog)
 
 
+# bikin dua model, 1 = book (memuat field id dengan tipe data uuid, ada field tittle dengan tipe charfield max 255 karakter)
+# 2 = author (bio textfield, books satu author bisa menulis banyak book, user (1 user terkait dengan satu author))
+
+#class Author(models.Model):
+ ##  user = models.OneToOneField(User, on_delete=models.SET(), primary_key=True)
+
+#### books = models.ForeignKey(Author, on_delete=models.CASCADE)
+
 class Product(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     CATEGORY_CHOICES = [
@@ -51,6 +59,7 @@ class Product(models.Model):
         self.save()
 
     
-
+# bikin dua model, 1 = book (memuat field id dengan tipe data uuid, ada field tittle dengan tipe charfield max 255 karakter)
+# 2 = author (bio textfield, books satu author bisa menulis banyak book, user (1 user terkait dengan satu author))
 
 # model baru, employee (name (maks 255),nama,age,persona (teks panjang tdk ada batas karakter)

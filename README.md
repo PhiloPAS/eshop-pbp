@@ -111,7 +111,7 @@ git push pws main
 >> Feedback apresisasi karena tutorial dibuat dengan jelas dan terperinci, sehingga saya dapat dengan mudah mengikuti step-by-step.
 
 
-
+--------------------------------------------------------------
 # Tugas 3:
 1. Jelaskan mengapa kita memerlukan data delivery dalam pengimplementasian sebuah platform?
 > agar kita dapat mengirimkan data produk/stock secara ke client (web/mobile/third-party), memungkinkan decoupling backend–frontend, mendukung multi-klien, konsistensi data, caching/performance, dan kontrol akses/security.
@@ -149,7 +149,7 @@ _____________
 
 
 
-
+--------------------------------------------------------------
 # Tugas 4
 1. Apa itu Django AuthenticationForm? Jelaskan juga kelebihan dan kekurangannya.
 > AuthenticationForm adalah form bawaan Django yang (kali ini) kita gunakan di login_user sebagai tempat setor kredensial, memvalidasi melalui authenticate() dan memberi akses ke form.get_user() untuk dipakai oleh login(). Kelebihannya: cepat dipasang, aman secara default untuk validasi password, dan langsung kompatibel dengan login() sehingga session berfungsi tanpa banyak boilerplate. Kekurangannya muncul jika kita ingin login dengan email atau menambahkan 2FA/lockout, kita perlu subclass atau integrasi tambahan karena AuthenticationForm hanya menangani username/password dan tidak memberi proteksi brute-force atau OTP otomatis.
@@ -165,3 +165,27 @@ _____________
 
 5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
 > Saya mengimplementasikan checklist dengan menambahkan field `user` pada model `Product` menggunakan `ForeignKey` agar setiap produk terkait dengan user, lalu menjalankan `makemigrations` dan `migrate` supaya database diperbarui tanpa merusak data lama. Di `views.py`, saya ubah `create_product` agar menggunakan `commit=False` sehingga bisa menetapkan `product.user = request.user` sebelum disimpan, serta menambahkan `request.FILES` agar upload file berfungsi. Fungsi `show_main` saya perbaiki untuk membaca query parameter `filter` sehingga bisa menampilkan semua produk atau hanya milik user yang sedang login, dan `show_product` saya ubah menjadi `select_related('user')` untuk mengurangi query sekaligus menambahkan `try/except` agar error saat increment views tidak memutus rendering. Di template, saya perbaiki `product_detail.html` untuk menampilkan author dengan aman dan menambahkan tombol filter All/My Product di `main.html` agar user bisa memilih produk yang ditampilkan. Selain itu, saya menambahkan cookie `last_login` saat login dan menghapusnya saat logout supaya informasi login terakhir bisa ditampilkan.
+
+--------------------------------------------------------------
+# Tugas 5
+
+1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
+> Jika ada beberapa CSS selector yang mengatur elemen yang sama, browser menentukan prioritas dengan aturan specificity, yaitu urutannya dari paling kuat hingga paling lemah: inline style (style="..."), kemudian ID selector (#id), lalu class/attribute/pseudo-class (.class, :hover, [type="text"]), dan terakhir element/pseudo-element selector (div, h1, ::before). Jika tingkatnya sama, maka rule yang ditulis paling akhir dalam CSS yang akan berlaku.
+
+2. Mengapa responsive design menjadi konsep yang penting dalam pengembangan aplikasi web? Berikan contoh aplikasi yang sudah dan belum menerapkan responsive design, serta jelaskan mengapa!
+> Responsive design penting karena tampilan web harus menyesuaikan berbagai ukuran layar (desktop, tablet, smartphone) agar pengalaman pengguna tetap baik tanpa harus zoom in atau scroll berlebihan, serta meningkatkan SEO karena Google mengutamakan situs mobile-friendly; contohnya, aplikasi seperti Shopee atau Tokopedia sudah menerapkan responsive design dengan layout yang fleksibel di HP maupun desktop, sedangkan beberapa website lama instansi pemerintah masih belum responsive sehingga tampilan tabel atau teks jadi sulit dibaca di perangkat kecil.
+
+3. Jelaskan perbedaan antara margin, border, dan padding, serta cara untuk mengimplementasikan ketiga hal tersebut!
+> Margin, border, dan padding adalah bagian dari box model CSS yang berfungsi berbeda: margin adalah jarak di luar border untuk memberi ruang antar elemen, border adalah garis bingkai di sekitar elemen, sedangkan padding adalah jarak antara isi (konten) dengan border agar konten tidak mepet; ketiganya dapat diatur dengan CSS misalnya margin: 20px;, border: 2px solid black;, dan padding: 10px; untuk menampilkan perbedaan fungsi masing-masing.
+
+4. Jelaskan konsep flex box dan grid layout beserta kegunaannya!
+> Flexbox dan Grid adalah teknik layout modern di CSS dengan fungsi berbeda, di mana Flexbox cocok untuk tata letak satu dimensi (horizontal atau vertikal) seperti navbar atau daftar card, karena dapat mengatur alignment dan distribusi ruang menggunakan properti justify-content dan align-items, sedangkan Grid digunakan untuk tata letak dua dimensi (baris dan kolom sekaligus) seperti dashboard atau galeri produk, dengan pengaturan seperti grid-template-columns dan grid-template-rows, sehingga keduanya saling melengkapi tergantung kebutuhan layout.
+
+5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!
+> 1. Pertama-tama kita mengatuk static files yang terletak pada file settings.py, terdapat static_root untuk menentukan absolute path ke directory static files dan berguna untuk menyediakan path konten statis ke akses production.
+> 2. Kedua, menambahkan tailwind ke base.html (saya sudah menambahkan tailwind sejak tugas 2)
+> 3. Ketiga, kita menambahkan fitur edit product dan hapus product alias buat function baru di views.py, lalu kita tambahkan berkas html baru di aplikasi main yang berjudul edit_product.html. Jangan lupa import di urls.py serta tambahkan path urlpatterns.
+> 4. Modifikasi main.html yang terletak di aplikasi main agar ada button untuk edit dan delete product.
+> 5. Kita gunakan navigation bar (navbar) agar saat user menggunakan handphone/tab yang pixel width nya lebih kecil daripada laptop, beberapa tombol akan terkumpul di navbar tersebut untuk mempermudah user dalam penggunaan web
+> 6. Jangan lupa konfigurasi static files pada middleware yang terletak di settings.py serta pastikan static_root, staticfiles_dirs, dan static_url terkonfigurasi.
+> 7. Terakhir, kita styling global.css, login.html, create_product, product_detail.html, register.html, dan edit_product menggunakan script tailwind agar web terlihat lebih bagus, modern, dan user-friendly.
