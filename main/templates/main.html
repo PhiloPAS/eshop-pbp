@@ -98,6 +98,9 @@
     .user-box--welcome { display:none; }
     .btn-logout { min-width: 72px; padding: 6px 10px; }
   }
+
+  #crudModalContent { transition: transform .15s ease, opacity .15s ease; transform-origin: center; }
+  .stock-text { font-weight: 600; }
 </style>
 
 <header class="bg-black sticky top-0 z-50 shadow-md">
@@ -142,10 +145,10 @@
       </div>
 
       <div class="hero-row">
-        <a href="?filter=all" class="btn-hero btn-hero--secondary">All Products</a>
+        <a id="filter-all" href="?filter=all" class="btn-hero btn-hero--secondary">All Products</a>
 
         {% if user.is_authenticated %}
-          <a href="?filter=my" class="btn-hero btn-hero--secondary">My Products</a>
+          <a id="filter-my" href="?filter=my" class="btn-hero btn-hero--secondary">My Products</a>
         {% else %}
           <span class="btn-hero" style="background:#94a3b8; color:#0f172a; opacity:0.9; cursor:not-allowed;">My Products</span>
         {% endif %}
@@ -154,63 +157,555 @@
   </div>
 </section>
 
+{% include 'toast.html' %}
+
 <section id="products" class="bg-white py-16">
   <div class="container mx-auto px-4 text-center">
-    <h2 id="products-title" class="text-4xl font-bold text-gray-800 mb-8">Products</h2>
+    <div class="mb-8">
+      <h2 id="products-title" class="text-4xl font-bold text-gray-800 mb-2">Products</h2>
+      <p class="text-gray-600 mb-4">Browse and sell football products — kits, merch, equipment, and more.</p>
 
-    {% if not products %}
-      <!-- Empty State -->
-      <div class="bg-white rounded-xl border-2 border-gray-200 p-12 text-center max-w-lg mx-auto shadow-lg">
-        <div class="text-8xl mb-6">
-          🌲🐇🌲
-        </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-3">No Products Found</h3>
-        <p class="text-gray-600 mb-8 text-lg">Add your first product.</p>
-        <a href="{% url 'main:create_product' %}" 
-           class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 shadow-lg">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-          </svg>
-          Create First Product
-        </a>
-      </div>
-    {% else %}
-      <!-- Products Grid -->
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {% for product in products %}
-        <article class="product-card hover-transform" data-category="{{ product.category }}">
-          {% if product.thumbnail %}
-            <a href="{% url 'main:product_detail' product.id %}">
-              <img src="{{ product.thumbnail }}" alt="{{ product.name }}" class="product-thumb mb-4">
-            </a>
-          {% endif %}
-          <h3 class="text-xl font-semibold mb-2">
-            <a href="{% url 'main:product_detail' product.id %}" class="hover:underline">{{ product.name }}</a>
-          </h3>
-          <p class="text-sm text-gray-600 mb-2">{{ product.get_category_display }}{% if product.is_featured %} · Featured{% endif %}</p>
+      {% if user.is_authenticated %}
+        <button onclick="showModal()" class="inline-flex items-center px-4 py-2 bg-white text-green-600 font-semibold outline outline-2 outline-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors mb-4">Create Product by AJAX</button>
+      {% else %}
+        <button class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-500 font-semibold rounded-md mb-4 cursor-not-allowed" disabled>Create Product by AJAX</button>
+      {% endif %}
 
-          <p class="text-gray-700 mb-2">
-            {{ product.description|slice:":20" }}{% if product.description|length > 20 %}....{% endif %}
-          </p>
+      <button id="btnRefresh" class="inline-flex items-center px-4 py-2 ml-3 bg-white text-gray-700 font-semibold border rounded-md hover:bg-gray-50 transition-colors">Refresh List</button>
+    </div>
 
-          <p class="text-xs text-gray-500 text-left mb-4">Stock: {{ product.stock }}</p>
+    <!-- Loading / Error / Grid / Empty -->
+    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <svg class="animate-spin h-8 w-8 text-green-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-gray-600 mt-3">Loading products...</p>
+    </div>
 
-          <div class="flex justify-between items-center">
-            <small class="text-gray-500">{{ product.created_at|date:"d M Y" }}</small>
-            <div class="flex items-center gap-2">
-              <a href="{% url 'main:product_detail' product.id %}" class="px-3 py-1 rounded-md bg-green-600 text-white text-sm hover:bg-green-700 transition-colors">View</a>
-              {% if user.is_authenticated and product.user == user %}
-                <a href="{% url 'main:edit_product' product.pk %}" class="px-3 py-1 rounded-md bg-yellow-500 text-white text-sm hover:bg-yellow-600 transition-colors">Edit</a>
-                <a href="{% url 'main:delete_product' product.pk %}" class="px-3 py-1 rounded-md bg-red-600 text-white text-sm hover:bg-red-700 transition-colors">Delete</a>
-              {% endif %}
-            </div>
-          </div>
-        </article>
-        {% endfor %}
-      </div>
-    {% endif %}
+    <div id="error" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 max-w-2xl mx-auto mb-6"></div>
+
+    <div id="grid" class="hidden"></div>
+
+    <div id="empty" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <div class="text-8xl mb-6">🌲🐇🌲</div>
+      <h3 class="text-2xl font-bold text-gray-900 mb-3">No Products Found</h3>
+      <p class="text-gray-600 mb-8 text-lg">Add your first product.</p>
+      <a href="{% url 'main:create_product' %}" 
+         class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 shadow-lg">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Create First Product
+      </a>
+    </div>
+
   </div>
 </section>
 
 <div class="h-16"></div>
+
+<!-- Modal (create/update) - AJAX ONLY -->
+<div id="crudModal" class="hidden fixed inset-0 z-50 w-full flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div id="crudModalContent" class="bg-white rounded-lg shadow-lg w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-1/3 max-h-screen overflow-y-auto opacity-0 scale-95">
+    <div class="flex items-center justify-between p-4 border-b">
+      <div>
+        <h3 id="crudTitle" class="text-xl font-semibold text-gray-900">Create New Product</h3>
+        <p id="crudSubtitle" class="text-sm text-gray-600 mt-1">Share your football products with the community</p>
+      </div>
+      <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" onclick="hideModal()">
+        <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+        <span class="sr-only">Close modal</span>
+      </button>
+    </div>
+
+    <div class="px-6 py-4 space-y-6">
+      <form id="productForm">
+        {% csrf_token %}
+        <input type="hidden" id="product_id" name="product_id" value="">
+        
+        <div class="mb-4">
+          <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+          <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Enter product name" required>
+        </div>
+
+        <div class="mb-4">
+          <label for="brand" class="block text-sm font-medium text-gray-700">Brand</label>
+          <input type="text" id="brand" name="brand" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="e.g., Nike, Adidas, Puma" required>
+        </div>
+
+        <div class="mb-4">
+          <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+          <textarea id="description" name="description" rows="4" maxlength="1000" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Enter product description" required></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+          <select id="category" name="category" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required>
+            <option value="">Choose a category</option>
+            <option value="men">men</option>
+            <option value="woman">woman</option>
+            <option value="kids">kids</option>
+            <option value="accessories">accessories</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label for="thumbnail" class="block text-sm font-medium text-gray-700">Thumbnail URL</label>
+          <input type="url" id="thumbnail" name="thumbnail" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="https://example.com/image.jpg">
+        </div>
+
+        <div class="mb-4">
+          <label for="price" class="block text-sm font-medium text-gray-700">Price (IDR)</label>
+          <input type="number" id="price" name="price" min="0" step="1" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="100000" required>
+        </div>
+
+        <div class="mb-4">
+          <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
+          <input type="number" id="stock" name="stock" min="0" step="1" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="0" value="0" required>
+        </div>
+
+        <div class="mb-4">
+          <div class="flex items-center">
+            <input id="is_featured" name="is_featured" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded">
+            <label for="is_featured" class="ml-2 text-sm font-medium text-gray-900">Featured Product</label>
+          </div>
+        </div>
+
+        <div id="modalError" class="hidden text-sm text-red-600"></div>
+      </form>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4 p-6 border-t border-gray-200 rounded-b">
+      <button type="button" id="cancelButton" class="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors" onclick="hideModal()">Cancel</button>
+      <button type="button" id="submitProduct" class="order-1 sm:order-2 flex-1 bg-green-600 text-white px-6 py-3 rounded-md font-medium hover:bg-green-700 transition-colors">Publish Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div id="confirmModal" class="hidden fixed inset-0 z-50 w-full flex items-center justify-center bg-black bg-opacity-40">
+  <div class="bg-white rounded-lg p-6 w-11/12 sm:w-96">
+    <h3 class="text-lg font-semibold">Konfirmasi Hapus</h3>
+    <p class="text-sm text-gray-600 mt-2">Apakah Anda yakin ingin menghapus produk ini? Tindakan ini tidak dapat dibatalkan.</p>
+    <div class="mt-4 flex justify-end gap-3">
+      <button class="px-4 py-2 border rounded-md" onclick="hideConfirm()">Batal</button>
+      <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 text-white rounded-md">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js" defer></script>
+
+<script>
+/* ====== Utilities ====== */
+function getCookie(name) {
+  const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+const CSRFTOKEN = getCookie('csrftoken');
+
+/* ====== Modal show/hide (AJAX ONLY - no edit functionality) ====== */
+function showModal() {
+  const modal = document.getElementById('crudModal');
+  const modalContent = document.getElementById('crudModalContent');
+  modal.classList.remove('hidden');
+  setTimeout(() => { 
+    modalContent.classList.remove('opacity-0','scale-95'); 
+    modalContent.classList.add('opacity-100','scale-100'); 
+  }, 50);
+
+  const form = document.getElementById('productForm');
+  if (!form) return;
+  form.reset();
+  document.getElementById('product_id').value = '';
+  document.getElementById('modalError').classList.add('hidden');
+  document.getElementById('crudTitle').textContent = 'Create New Product';
+  document.getElementById('crudSubtitle').textContent = 'Share your football products with the community';
+  document.getElementById('stock').value = 0;
+}
+
+function hideModal() {
+  const modal = document.getElementById('crudModal');
+  const modalContent = document.getElementById('crudModalContent');
+  modalContent.classList.remove('opacity-100','scale-100');
+  modalContent.classList.add('opacity-0','scale-95');
+  setTimeout(() => modal.classList.add('hidden'), 150);
+}
+
+/* Confirm modal */
+let _deleteTargetUrl = null;
+function showConfirm(deleteUrl) {
+  _deleteTargetUrl = deleteUrl;
+  document.getElementById('confirmModal').classList.remove('hidden');
+}
+function hideConfirm() { 
+  _deleteTargetUrl = null; 
+  document.getElementById('confirmModal').classList.add('hidden'); 
+}
+
+/* Page elements */
+const loadingSpinner = document.getElementById('loading');
+const errorMessage = document.getElementById('error');
+const emptyStateDisplay = document.getElementById('empty');
+const productsGridContainer = document.getElementById('grid');
+const showAllButton = document.getElementById('filter-all');
+const showMyButton = document.getElementById('filter-my');
+const btnRefresh = document.getElementById('btnRefresh');
+
+const PRODUCTS_API_ENDPOINT = "{% url 'main:show_json' %}";
+const CREATE_PRODUCT_ENDPOINT = "{% url 'main:add_product_entry_ajax' %}";
+const CURRENT_USER_ID = "{{ user.id|default_if_none:'' }}";
+
+let activeFilter = 'all';
+let allProductsData = [];
+
+/* Helpers */
+function formatCurrency(value) {
+  try { 
+    return new Intl.NumberFormat('id-ID', { 
+      style: 'currency', 
+      currency: 'IDR', 
+      maximumFractionDigits: 0 
+    }).format(value); 
+  }
+  catch(e){ return 'Rp ' + (value || 0); }
+}
+
+function sanitize(v) { 
+  if (typeof DOMPurify !== 'undefined') 
+    return DOMPurify.sanitize(String(v || '')); 
+  return String(v || ''); 
+}
+
+function updateFilterButtonsAppearance() {
+  if (!showAllButton || !showMyButton) return;
+  if (activeFilter === 'all') {
+    showAllButton.className = 'btn-hero btn-hero--secondary bg-green-600';
+    showMyButton.className = 'btn-hero btn-hero--secondary';
+  } else {
+    showMyButton.className = 'btn-hero btn-hero--secondary bg-green-600';
+    showAllButton.className = 'btn-hero btn-hero--secondary';
+  }
+}
+
+function displayPageSection({ showLoading=false, showError=false, showEmpty=false, showGrid=false }) {
+  if (loadingSpinner) loadingSpinner.classList.toggle('hidden', !showLoading);
+  if (errorMessage) errorMessage.classList.toggle('hidden', !showError);
+  if (emptyStateDisplay) emptyStateDisplay.classList.toggle('hidden', !showEmpty);
+  if (productsGridContainer) productsGridContainer.classList.toggle('hidden', !showGrid);
+  if (showGrid && productsGridContainer) {
+    productsGridContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto';
+  }
+}
+
+/* Build product card */
+function getReadableCategoryName(cat) {
+  const map = { 
+    men: 'Men', 
+    woman: 'Woman', 
+    kids: 'Kids', 
+    accessories: 'Accessories' 
+  };
+  return map[cat] || (cat || 'Uncategorized');
+}
+
+function shortDescription(text, maxLen=20) { 
+  if (!text) return ''; 
+  const s = String(text); 
+  return s.length > maxLen ? s.slice(0, maxLen) + '...' : s; 
+}
+
+function buildProductCardElement(product) {
+  const article = document.createElement('article');
+  article.className = 'product-card hover-transform bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full';
+  
+  const detailLink = `/product/${product.id}/`;
+  const editLink = `/product/${product.id}/edit`;  // FIXED: No trailing slash
+  const deleteLink = `/product/${product.id}/delete`;  // FIXED: No trailing slash
+  
+  const created = product.created_at ? 
+    new Date(product.created_at).toLocaleDateString('id-ID', { 
+      year:'numeric', 
+      month:'short', 
+      day:'numeric' 
+    }) : '';
+  
+  const thumbnailHtml = product.thumbnail ? 
+    `<img src="${sanitize(product.thumbnail)}" alt="${sanitize(product.name)}" class="w-full h-full object-cover">` : 
+    `<div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500">No image</div>`;
+  
+  const featuredBadge = product.is_featured ? 
+    `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Featured</span>` : '';
+  
+  const priceHtml = (typeof product.price !== 'undefined') ? 
+    `<div class="text-lg font-bold text-gray-900">${formatCurrency(product.price)}</div>` : '';
+  
+  // FIXED: Edit button now uses regular link to edit_product.html (NOT AJAX)
+  const editDeleteButtons = (CURRENT_USER_ID && String(CURRENT_USER_ID) === String(product.user_id))
+    ? `<div class="flex space-x-2">
+        <a href="${editLink}" class="text-gray-600 hover:text-gray-700 text-sm transition-colors">Edit</a>
+        <button onclick="showConfirm('${deleteLink}')" class="text-red-600 hover:text-red-700 text-sm transition-colors">Delete</button>
+      </div>`
+    : '';
+  
+  const excerpt = shortDescription(sanitize(product.description), 20);
+  const stockNum = (typeof product.stock !== 'undefined' && product.stock !== null && product.stock !== '') ? 
+    Number(product.stock) : null;
+  const stockText = (stockNum !== null && !isNaN(stockNum)) ? 
+    `Stock: ${stockNum}` : 'Stock: -';
+  const stockTextClass = (stockNum !== null && !isNaN(stockNum)) ? 
+    (stockNum > 5 ? 'stock-text text-green-700' : 'stock-text text-red-700') : 
+    'stock-text text-gray-500';
+
+  const brandDisplay = product.brand ? 
+    `<span class="text-xs text-gray-500">Brand: ${sanitize(product.brand)}</span>` : '';
+
+  const cardHtml = `
+    <div class="aspect-[16/9] relative overflow-hidden">
+      ${thumbnailHtml}
+      <div class="absolute top-3 left-3">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-green-600 text-white">${sanitize(getReadableCategoryName(product.category))}</span>
+      </div>
+      <div class="absolute top-3 right-3 flex space-x-2">
+        ${featuredBadge}
+      </div>
+    </div>
+    <div class="p-5 flex flex-col flex-1">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-col">
+          <small class="text-gray-500">${created}</small>
+          ${brandDisplay}
+        </div>
+        ${priceHtml}
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+        <a href="${detailLink}" class="hover:text-green-600 transition-colors">${sanitize(product.name)}</a>
+      </h3>
+      <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">${excerpt}</p>
+      <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-100">
+        <div class="flex items-center gap-4">
+          <a href="${detailLink}" class="text-green-600 hover:text-green-700 font-medium text-sm transition-colors">View</a>
+          <div class="${stockTextClass}">${sanitize(stockText)}</div>
+        </div>
+        ${editDeleteButtons}
+      </div>
+    </div>
+  `;
+  article.innerHTML = cardHtml;
+  return article;
+}
+
+/* Render & Fetch */
+function renderAllProductCards(products) { 
+  if (!productsGridContainer) return; 
+  productsGridContainer.innerHTML = ''; 
+  products.forEach(p => productsGridContainer.appendChild(buildProductCardElement(p))); 
+}
+
+function filterAndDisplayProducts() {
+  updateFilterButtonsAppearance();
+  const filtered = activeFilter === 'all' ? 
+    allProductsData : 
+    allProductsData.filter(p => String(p.user_id) === String(CURRENT_USER_ID));
+  
+  if (!filtered || filtered.length === 0) {
+    displayPageSection({ showEmpty: true });
+  } else { 
+    renderAllProductCards(filtered); 
+    displayPageSection({ showGrid: true }); 
+  }
+}
+
+async function fetchProductsFromServer() {
+  try {
+    displayPageSection({ showLoading: true });
+    const res = await fetch(PRODUCTS_API_ENDPOINT, { 
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error('Failed to fetch products');
+    const data = await res.json();
+    allProductsData = Array.isArray(data) ? data : (data.results || []);
+    filterAndDisplayProducts();
+  } catch (err) {
+    console.error('Error loading products:', err);
+    displayPageSection({ showError: true });
+    if (errorMessage) errorMessage.textContent = 'Terjadi kesalahan saat memuat data produk.';
+  }
+}
+
+/* Event handlers */
+function handleShowAllClick(e) { 
+  if (e && e.preventDefault) e.preventDefault(); 
+  activeFilter = 'all'; 
+  filterAndDisplayProducts(); 
+}
+
+function handleShowMyClick(e) { 
+  if (e && e.preventDefault) e.preventDefault(); 
+  activeFilter = 'my'; 
+  filterAndDisplayProducts(); 
+}
+
+/* Initialize page */
+function initializeProductsPage() {
+  if (showAllButton) showAllButton.addEventListener('click', handleShowAllClick);
+  if (showMyButton) showMyButton.addEventListener('click', handleShowMyClick);
+  if (btnRefresh) btnRefresh.addEventListener('click', () => fetchProductsFromServer());
+  
+  // Initial fetch
+  fetchProductsFromServer();
+}
+
+/* AJAX Create Product (NO EDIT - Edit uses regular form) */
+async function submitProductFormAJAX() {
+  const btn = document.getElementById('submitProduct');
+  const errEl = document.getElementById('modalError');
+  const form = document.getElementById('productForm');
+  if (!form) return;
+  
+  const formData = new FormData(form);
+  const allowedCats = ['men','woman','kids','accessories'];
+  const cat = formData.get('category');
+  
+  if (!allowedCats.includes(cat)) { 
+    if (errEl) { 
+      errEl.classList.remove('hidden'); 
+      errEl.textContent = 'Invalid category selected.'; 
+    } 
+    return; 
+  }
+  
+  formData.set('is_featured', document.getElementById('is_featured').checked ? 'true' : 'false');
+
+  const origText = btn.innerHTML; 
+  btn.disabled = true; 
+  btn.innerHTML = 'Publishing…';
+
+  try {
+    const res = await fetch(CREATE_PRODUCT_ENDPOINT, {
+      method: 'POST',
+      headers: { 
+        'X-CSRFToken': CSRFTOKEN, 
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      let errText = 'Gagal menyimpan produk.';
+      if (contentType.includes('application/json')) { 
+        const j = await res.json(); 
+        errText = j.error || j.detail || JSON.stringify(j); 
+      }
+      throw new Error(errText);
+    }
+
+    hideModal();
+    
+    // Refresh product list
+    await fetchProductsFromServer();
+    
+    // Show toast notification
+    try { 
+      if (window.showToast) showToast('Product created successfully!'); 
+    } catch(e){}
+
+  } catch (err) {
+    console.error('Save error:', err);
+    if (errEl) { 
+      errEl.classList.remove('hidden'); 
+      errEl.textContent = String(err.message || err); 
+    }
+  } finally { 
+    btn.disabled = false; 
+    btn.innerHTML = origText; 
+  }
+}
+
+/* Delete via AJAX */
+async function confirmDeleteAction() {
+  if (_deleteTargetUrl == null) return;
+  
+  const btn = document.getElementById('confirmDeleteBtn');
+  btn.disabled = true; 
+  btn.textContent = 'Deleting…';
+  
+  try {
+    const res = await fetch(_deleteTargetUrl, { 
+      method: 'POST', 
+      headers: { 
+        'X-CSRFToken': CSRFTOKEN, 
+        'X-Requested-With': 'XMLHttpRequest', 
+        'Accept': 'application/json' 
+      } 
+    });
+    
+    if (!res.ok) throw new Error('Gagal menghapus produk');
+    
+    // Remove from state
+    const idMatch = _deleteTargetUrl.match(/\/(\d+)\//);
+    const id = idMatch ? idMatch[1] : null;
+    if (id) {
+      allProductsData = allProductsData.filter(p => String(p.id) !== String(id));
+    }
+    
+    filterAndDisplayProducts();
+    hideConfirm();
+    
+    // Show toast notification
+    try { 
+      if (window.showToast) showToast('Product deleted successfully!'); 
+    } catch(e){}
+    
+  } catch (err) { 
+    console.error(err); 
+    alert('Gagal menghapus produk.'); 
+  } finally { 
+    btn.disabled = false; 
+    btn.textContent = 'Hapus'; 
+  }
+}
+
+/* Wire modal submit & init */
+document.addEventListener('DOMContentLoaded', function() {
+  const submitBtn = document.getElementById('submitProduct'); 
+  if (submitBtn) submitBtn.addEventListener('click', submitProductFormAJAX);
+  
+  const confirmBtn = document.getElementById('confirmDeleteBtn'); 
+  if (confirmBtn) confirmBtn.addEventListener('click', confirmDeleteAction);
+  
+  initializeProductsPage();
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', function(e) { 
+    if (e.key === 'Escape') { 
+      const modal = document.getElementById('crudModal'); 
+      if (modal && !modal.classList.contains('hidden')) hideModal();
+      
+      const confirmModal = document.getElementById('confirmModal');
+      if (confirmModal && !confirmModal.classList.contains('hidden')) hideConfirm();
+    } 
+  });
+  
+  // Close modal on background click
+  const modalBg = document.getElementById('crudModal'); 
+  if (modalBg) { 
+    modalBg.addEventListener('click', function(e) { 
+      const content = document.getElementById('crudModalContent'); 
+      if (content && !content.contains(e.target)) hideModal(); 
+    }); 
+  }
+  
+  // Close confirm modal on background click
+  const confirmModalBg = document.getElementById('confirmModal');
+  if (confirmModalBg) {
+    confirmModalBg.addEventListener('click', function(e) {
+      if (e.target === confirmModalBg) hideConfirm();
+    });
+  }
+});
+</script>
+
 {% endblock content %}

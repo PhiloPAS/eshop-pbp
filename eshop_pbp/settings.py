@@ -39,6 +39,7 @@ CSRF_TRUSTED_ORIGINS = ["https://philo-pradipta41-eshoppbp.pbp.cs.ui.ac.id"]
 
 INSTALLED_APPS = [
     'main',
+    'django.contrib.humanize',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -153,3 +154,5 @@ else:
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
